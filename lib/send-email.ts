@@ -19,7 +19,7 @@ export async function sendEmail({ from, subject, body, html }: SendEmailOptions)
     });
     
     await transporter.sendMail({
-        to: process.env.EMAIL_USER + ", mrlotzo@gmail.com",
+        to: process.env.EMAIL_USER,
         from,
         subject,
         text: body,
