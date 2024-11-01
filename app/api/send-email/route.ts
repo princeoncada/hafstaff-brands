@@ -1,52 +1,72 @@
-import { NextResponse } from 'next/server';
-import nodemailer from 'nodemailer';
+import { NextResponse, NextRequest } from "next/server";
+import { Ratelimit } from '@upstash/ratelimit';
+import { kv } from '@vercel/kv';
+import { sendEmail } from '@/lib/send-email';
+
+// Create a new ratelimit instance
+const ratelimit = new Ratelimit({
+    redis: kv,
+    limiter: Ratelimit.slidingWindow(3, '60s')
+});
 
 type Data = {
     success: boolean;
     message: string;
 };
 
-const transporter = nodemailer.createTransport({
-    host: process.env.EMAIL_HOST,
-    port: parseInt(process.env.EMAIL_PORT ?? '587', 10),
-    secure: process.env.EMAIL_PORT === '465',
-    auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-    }
-});
+// Define the runtime as nodejs for the function and export
+export const runtime = "nodejs";
 
-export async function POST(request: Request) {
-    const { to, subject, body, html } = await request.json();
+// Define the POST method for the function to send an email
+export async function POST(req: NextRequest) {
 
-    if (!to || !subject || (!body && !html)) {
-        return NextResponse.json<Data>(
-            { success: false, message: "Missing required fields" },
-            { status: 400 }
-        );
-    }
+    // Get the IP address of where the request is coming from
+    const ip = (req.headers.get('x-forwarded-for') ?? '127.0.0.1').split(',')[0]
 
-    try {
-        // Send the email using the transporter
-        await transporter.sendMail({
-            from: process.env.EMAIL_USER, // Sender address
-            to,                           // List of recipients
-            subject,                      // Subject line
-            text: body,                   // Plain text body
-            html,                         // HTML body
-        });
+    // Get the rate limit information for the IP address
+    const { limit, reset, remaining } = await ratelimit.limit(ip)
 
-        console.log("Email sent successfully");
+    // Check if the rate limit has been exceeded otherwise send the email
+    if (remaining === 0) {
+        return NextResponse.json({
+            error: 'Rate limit exceeded',
+            limit,
+            reset,
+            remaining
+        }, {
+            status: 429,
+            headers: {
+                'X-RateLimit-Limit': limit.toString(),
+                'X-RateLimit-Remaining': remaining.toString(),
+                'X-RateLimit-Reset': reset.toString()
+            }
+        })
+    } else {
 
-        return NextResponse.json<Data>(
-            { success: true, message: "Email sent successfully" },
-            { status: 200 }
-        );
-    } catch (error) {
-        console.error("Error sending email:", error);
-        return NextResponse.json<Data>(
-            { success: false, message: "Failed to send email" },
-            { status: 500 }
-        );
+        // Get the email information from the request
+        const { from, subject, body, html } = await req.json();
+
+        // Check if the required fields are present
+        if (!from || !subject || (!body && !html)) {
+            return NextResponse.json<Data>(
+                { success: false, message: "Missing required fields" },
+                { status: 400 }
+            );
+        }
+
+        // Send the email using the nodemailer transporter
+        try {
+            await sendEmail({ from, subject, body, html });
+
+            return NextResponse.json<Data>(
+                { success: true, message: "Email sent successfully" },
+                { status: 200 }
+            );
+        } catch (error) {
+            return NextResponse.json<Data>(
+                { success: false, message: (error as Error).message.toString() },
+                { status: 500 }
+            );
+        }
     }
 }
