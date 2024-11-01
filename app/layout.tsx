@@ -3,6 +3,7 @@ import "./globals.css";
 import Menubar from "@/components/Menubar";
 import { Inter } from 'next/font/google';
 import { ThemeProvider } from "@/components/ThemeProvider"
+import { Toaster } from "@/components/ui/toaster"
 
 const inter = Inter({
     weight: ['400', '700'],  // Add weights you need
@@ -30,6 +31,7 @@ export default function RootLayout({
                 >
                     <Menubar></Menubar>
                     {children}
+                    <Toaster />
                 </ThemeProvider>
             </body>
         </html>
