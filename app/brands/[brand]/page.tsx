@@ -42,8 +42,8 @@ export default async function Brand({ params }: Readonly<{ params: { brand: stri
                     <MDXRemote
                         source={content}
                     />
-                    <Link href={`/`} className='mt-8 flex justify-start'>
-                        <Button className=''><ArrowLeft /> Return &nbsp;</Button>
+                    <Link href={`/`} className='mt-8 flex justify-end'>
+                        <Button className=''><ArrowLeft /> Return to Brands &nbsp;</Button>
                     </Link>
                 </div>
             </div>
