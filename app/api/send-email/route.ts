@@ -2,6 +2,7 @@ import { NextResponse, NextRequest } from "next/server";
 import { Ratelimit } from '@upstash/ratelimit';
 import { kv } from '@vercel/kv';
 import { sendEmail } from '@/lib/send-email';
+import { recaptchaSubmit } from "@/lib/recaptcha-submit";
 
 // Create a new ratelimit instance
 const ratelimit = new Ratelimit({
@@ -44,29 +45,34 @@ export async function POST(req: NextRequest) {
     } else {
 
         // Get the email information from the request
-        const { from, subject, body, html } = await req.json();
+        const { from, subject, body, html, gRecaptchaToken } = await req.json();
 
         // Check if the required fields are present
-        if (!from || !subject || (!body && !html)) {
+        if (!from || !subject || (!body && !html) || !gRecaptchaToken) {
             return NextResponse.json<Data>(
                 { success: false, message: "Missing required fields" },
                 { status: 400 }
             );
         }
 
-        // Send the email using the nodemailer transporter
-        try {
-            await sendEmail({ from, subject, body, html });
+        // Verify the reCAPTCHA token
+        const recaptchaOutcome = (await (await recaptchaSubmit({ gRecaptchaToken })).json()).success
 
-            return NextResponse.json<Data>(
-                { success: true, message: "Email sent successfully" },
-                { status: 200 }
-            );
-        } catch (error) {
-            return NextResponse.json<Data>(
-                { success: false, message: (error as Error).message.toString() },
-                { status: 500 }
-            );
+        if (recaptchaOutcome) {
+            try {
+                await sendEmail({ from, subject, body, html });
+
+                return NextResponse.json<Data>(
+                    { success: true, message: "Email sent successfully" },
+                    { status: 200 }
+                );
+            } catch (error) {
+                return NextResponse.json<Data>(
+                    { success: false, message: (error as Error).message.toString() },
+                    { status: 500 }
+                );
+            }
         }
+
     }
 }
