@@ -75,66 +75,64 @@ export default function ContactForm() {
         // Initialize Recaptcha Token
         const gRecaptchaToken = await executeRecaptcha("contact_form");
 
-        // Submit Recaptcha Token to Server and Verify Response based on Score
-        const response = await axios({
+        // Finalize Email HTML Template Body 
+
+        // Initialize User Feedback Variables
+        let title: string;
+        let description: string;
+
+        const htmlTemplate = `
+            <div>
+                <strong>Email:</strong> ${values.emailAddress}
+                <br/>
+                <strong>Name:</strong> ${values.name}
+                <br/>
+                <strong>Message:</strong> ${values.message}
+            </div>
+        `
+
+        const data = {
+            from: values.emailAddress,
+            subject: values.subject,
+            body: values.message,
+            html: htmlTemplate,
+            gRecaptchaToken
+        }
+
+        // Request to Send Email
+        await axios({
             method: "POST",
-            url: "/api/recaptcha-submit",
-            data: {
-                gRecaptchaToken
-            },
+            url: "/api/send-email",
+            data,
             headers: {
                 "Content-Type": "application/json"
             }
-        });
+        }).then((response) => {
 
-        // Check if Recaptcha Verification was Successful
-        if (response.data.success === true) {
-            // Successful Recaptcha Verification
-            // Finalize Email HTML Template Body 
+            // Successful Email Send User Feedback with Status Code 200
+            title = response.status === 200 ? "Email Sent!" : "Something went wrong.";
+            description = response.status === 200 ? "Your email was sent successfully." : "Failed to send email.";
 
-            // Initialize User Feedback Variables
-            let title: string; 
-            let description: string;
+            // Reset Form Fields on Successful Email Send
+            form.reset();
 
-            // Request to Send Email
-            await axios({
-                method: "POST",
-                url: "/api/send-email",
-                data: {
-                    from: values.emailAddress,
-                    subject: values.subject,
-                    body: values.message
-                },
-                headers: {
-                    "Content-Type": "application/json"
-                }
-            }).then((response) => {
+        }).catch((error) => {
 
-                // Successful Email Send User Feedback with Status Code 200
-                title = response.status === 200 ? "Email Sent!" : "Something went wrong.";
-                description = response.status === 200 ? "Your email was sent successfully." : "Failed to send email.";
+            // Uncaptured errors response status codes responses
+            title = "Something went wrong.";
+            description = "Contact form is currently unavailable.";
 
-                // Reset Form Fields on Successful Email Send
-                form.reset();
+            // Rate Limit Exceeded User Feedback with Status Code 429
+            title = error.status === 429 ? "Rate Limit Exceeded" : title;
+            description = error.status === 429 ? "Please wait a moment before sending another email." : description;
+        }).finally(() => {
 
-            }).catch((error) => {
-                
-                // Uncaptured errors response status codes responses
-                title = "Something went wrong.";
-                description = "Contact form is currently unavailable.";
-
-                // Rate Limit Exceeded User Feedback with Status Code 429
-                title = error.status === 429 ? "Rate Limit Exceeded" : title;
-                description = error.status === 429 ? "Please wait a moment before sending another email." : description;
-            }).finally(() => {
-
-                // Display User Feedback Toast Notification
-                toast({
-                    title,
-                    description
-                })
+            // Display User Feedback Toast Notification
+            toast({
+                title,
+                description
             })
-        }
+        })
 
         // Set Loading State to False
         setLoading(false);
