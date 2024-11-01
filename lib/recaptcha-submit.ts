@@ -6,7 +6,7 @@ type Data = {
 };
 
 export async function recaptchaSubmit({ gRecaptchaToken }: Data) {
-    const secretKey = process.env.NEXT_PUBLIC_RECAPTCHA_SECRET_KEY;
+    const secretKey = process.env.RECAPTCHA_SECRET_KEY;
     
     let res;
 
