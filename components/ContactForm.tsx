@@ -201,7 +201,7 @@ export default function ContactForm() {
                     }}></FormField>
 
                     <Button type="submit" className="w-full" disabled={loading}>
-                        {loading ? <LoaderCircle className="animate-spin" size={24} /> : "Submit"}
+                        {loading ? <div className="flex flex-row gap-2 items-center justify-center"><LoaderCircle className="animate-spin" size={24} /> Please Wait</div> : "Submit"}
                     </Button>
                 </form>
             </Form>
