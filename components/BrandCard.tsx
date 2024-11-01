@@ -25,7 +25,7 @@ export default function BrandCard({ brand }: Readonly<BrandCardProps>) {
                     <div className="relative w-full h-96">
                         <Image
                             className="w-full h-full object-cover"
-                            src={brand.images[1]}
+                            src={brand.images[0]}
                             alt={brand.title}
                             width={500}
                             height={500}
