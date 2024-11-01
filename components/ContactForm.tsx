@@ -164,7 +164,7 @@ export default function ContactForm() {
                         return <FormItem>
                             <FormLabel>Email address</FormLabel>
                             <FormControl>
-                                <Input placeholder="Email address" type="email" {...field} />
+                                <Input placeholder="john.doe@email.com" type="email" {...field} />
                             </FormControl>
                             <FormMessage />
                         </FormItem>
@@ -174,7 +174,7 @@ export default function ContactForm() {
                         return <FormItem>
                             <FormLabel>Name</FormLabel>
                             <FormControl>
-                                <Input placeholder="Name" type="text" {...field} />
+                                <Input placeholder="John Doe" type="text" {...field} />
                             </FormControl>
                             <FormMessage />
                         </FormItem>
@@ -184,7 +184,7 @@ export default function ContactForm() {
                         return <FormItem>
                             <FormLabel>Subject</FormLabel>
                             <FormControl>
-                                <Input placeholder="Subject" type="text" {...field} />
+                                <Input placeholder="Your subject..." type="text" {...field} />
                             </FormControl>
                             <FormMessage />
                         </FormItem>
@@ -194,7 +194,7 @@ export default function ContactForm() {
                         return <FormItem>
                             <FormLabel>Message</FormLabel>
                             <FormControl>
-                                <Textarea placeholder="Message" rows={9} {...field} />
+                                <Textarea placeholder="Your message here..." rows={9} {...field} />
                             </FormControl>
                             <FormMessage />
                         </FormItem>
