@@ -39,14 +39,12 @@ export default async function Brand({ params }: Readonly<{ params: { brand: stri
     return (
         <div className='w-full'>
             <div className='max-w-[1440px] mx-auto'>
-                <div className='max-w-[1440px] prose dark:prose-invert p-4 py-8'>
-                    <Card className='p-6'>
-                        <MDXRemote
-                            source={content}
-                        />
-                    </Card>
-                    <Link href={`/`} className='mt-4 flex justify-end'>
-                        <Button className=''><ArrowLeft/> Return &nbsp;</Button>
+                <div className='max-w-[1440px] prose dark:prose-invert p-8 py-8'>
+                    <MDXRemote
+                        source={content}
+                    />
+                    <Link href={`/`} className='mt-8 flex justify-start'>
+                        <Button className=''><ArrowLeft /> Return &nbsp;</Button>
                     </Link>
                 </div>
             </div>
