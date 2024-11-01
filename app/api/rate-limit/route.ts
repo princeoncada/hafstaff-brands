@@ -7,9 +7,7 @@ const ratelimit = new Ratelimit({
     limiter: Ratelimit.slidingWindow(5, '10s')
 });
 
-export const config = {
-    runtime: 'edge'
-}
+export const runtime = "edge";
 
 export async function GET(req: NextRequest) {
     const ip = (req.headers.get('x-forwarded-for') ?? '127.0.0.1').split(',')[0]
